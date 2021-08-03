@@ -22,6 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('<int:year>/<str:latest_productId>/<str:keyWord>',views.all,name="recommendation based on all"),
     path('<int:year>',views.index,name="Recommendation Based On Rating"),
-    path("recommendationByUser/<str:latest_productId>/",views.recommendationByUser,name="Recommendation Based On User Purchase History"),
+    path("recommendationByUser/<str:latest_productId>",views.recommendationByUser,name="Recommendation Based On User Purchase History"),
     path("recommendationByDis/<str:keyWord>/",views.recommendationByDis,name="Recommendation Based On Product Description"),
 ]

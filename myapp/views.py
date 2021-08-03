@@ -35,11 +35,23 @@ def index(request, year):
     response = res['Rating']
     return JsonResponse(response, content_type='text/json')
 
+def getRatingOnly():
+    df = pd.read_csv(os.path.join(BASE_DIR, "myapp",
+                     "productrating.csv"), index_col=0)
+    df = df[df.Year >= 2018]
+    c = pd.DataFrame(df.groupby('ProductId')["Rating"].mean())
+    c["Num_rat"] = df.groupby('ProductId')["Rating"].count()
+    data = c.sort_values(['Num_rat', 'Rating'], ascending=False).head(20)
+    res = pd.DataFrame.to_dict(data)
+    response = res['Rating']
+    return response
+
 
 def recommendationByUser(request, latest_productId):
     if request.method == 'GET':
         try:
-            amazon_ratings = pd.read_csv('myapp\productrating.csv')
+            amazon_ratings =  pd.read_csv(os.path.join(BASE_DIR, "myapp",
+                     "productrating.csv"), index_col=0)
             amazon_ratings = amazon_ratings.dropna()
             popular_products = pd.DataFrame(
                 amazon_ratings.groupby('ProductId')['Rating'].count())
@@ -62,20 +74,23 @@ def recommendationByUser(request, latest_productId):
             Recommend = list(X.index[correlation_product_ID > 0.90])
             Recommend.remove(i)
             print(Recommend[0:9])
-            response = Recommend[0:20]
-            return JsonResponse(response, content_type='text/json', safe=False)
+            if not Recommend:
+                response = list(getRatingOnly().keys())
+            else :
+                response = Recommend
+            return JsonResponse(response[:10], content_type='text/json', safe=False)
 
         except Exception as e:
             print(e)
-
-            response = json.dumps([{'Error': 'No Product'}])
-    return HttpResponse(response, content_type='text/json')
+            response = json.dumps([{'Error': e}])
+    return HttpResponse(response, content_type='text/json',safe=False)
 
 
 def recommendationByDis(request, keyWord):
     if request.method == 'GET':
         try:
-            product_descriptions = pd.read_csv('myapp\wnewproductdis.csv')
+            product_descriptions =  pd.read_csv(os.path.join(BASE_DIR, "myapp",
+                     "wnewproductdis.csv"), index_col=0)
             product_descriptions.shape
             product_descriptions = product_descriptions.dropna()
             product_descriptions.shape
@@ -123,7 +138,8 @@ def recommendationByDis(request, keyWord):
 
 def getProductKey(mylist):
     productid = []
-    dictobj = pd.read_csv('myapp\wnewproductdis.csv',
+    dictobj = pd.read_csv(os.path.join(BASE_DIR, "myapp",
+                     "wnewproductdis.csv"),
                           header=None, index_col=0, squeeze=True).to_dict()
     for item in mylist:
         for key, obj in dictobj.items():
@@ -143,7 +159,8 @@ def all(request, year, latest_productId, keyWord):
     indexresponse = res['Rating']
     # user user response
 
-    amazon_ratings = pd.read_csv('myapp\productrating.csv')
+    amazon_ratings = pd.read_csv(os.path.join(BASE_DIR, "myapp",
+                     "productrating.csv"), index_col=0)
     amazon_ratings = amazon_ratings.dropna()
     popular_products = pd.DataFrame(
         amazon_ratings.groupby('ProductId')['Rating'].count())
@@ -167,7 +184,8 @@ def all(request, year, latest_productId, keyWord):
    # print(Recommend[0:9])
     userresponse = Recommend[0:20]
 
-    product_descriptions = pd.read_csv('myapp\wnewproductdis.csv')
+    product_descriptions = pd.read_csv(os.path.join(BASE_DIR, "myapp",
+                     "wnewproductdis.csv"), index_col=0)
     product_descriptions.shape
     product_descriptions = product_descriptions.dropna()
     product_descriptions.shape
