@@ -230,4 +230,4 @@ def all(request, year, latest_productId, keyWord):
     fullList=list(set(newindex+newuser+newdisc))
     response =list(OrderedDict.fromkeys(fullList))
     
-    return JsonResponse(response[:15], content_type='text/json', safe=False)
+    return JsonResponse(response, content_type='text/json', safe=False)
