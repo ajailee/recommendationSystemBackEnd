@@ -231,3 +231,45 @@ def all(request, year, latest_productId, keyWord):
     response =list(OrderedDict.fromkeys(fullList))
     
     return JsonResponse(response, content_type='text/json', safe=False)
+
+
+def userAndRating(request, year, latest_productId):
+    df = pd.read_csv(os.path.join(BASE_DIR, "myapp",
+                     "productrating.csv"), index_col=0)
+    df = df[df.Year >= year]
+    c = pd.DataFrame(df.groupby('ProductId')["Rating"].mean())
+    c["Num_rat"] = df.groupby('ProductId')["Rating"].count()
+    data = c.sort_values(['Num_rat', 'Rating'], ascending=False).head(20)
+    res = pd.DataFrame.to_dict(data)
+    indexresponse = res['Rating']
+    # user user response
+
+    amazon_ratings = pd.read_csv(os.path.join(BASE_DIR, "myapp",
+                     "productrating.csv"), index_col=0)
+    amazon_ratings = amazon_ratings.dropna()
+    popular_products = pd.DataFrame(
+        amazon_ratings.groupby('ProductId')['Rating'].count())
+    most_popular = popular_products.sort_values('Rating', ascending=False)
+    amazon_ratings1 = amazon_ratings.head(5000)
+    ratings_utility_matrix = amazon_ratings1.pivot_table(
+        values='Rating', index='UserId', columns='ProductId', fill_value=0)
+    X = ratings_utility_matrix.T
+    X1 = X
+    SVD = TruncatedSVD(n_components=10)
+    decomposed_matrix = SVD.fit_transform(X)
+    correlation_matrix = np.corrcoef(decomposed_matrix)
+    i = latest_productId
+    product_names = list(X.index)
+    product_ID = product_names.index(i)
+    product_ID
+    correlation_product_ID = correlation_matrix[product_ID]
+    correlation_product_ID.shape
+    Recommend = list(X.index[correlation_product_ID > 0.90])
+    Recommend.remove(i)
+   # print(Recommend[0:9])
+    userresponse = Recommend[0:20]
+    newindex=list(OrderedDict.fromkeys(indexresponse))
+    newuser=list(OrderedDict.fromkeys(userresponse))
+    fullList=list(set(newuser+newindex))
+    response =list(OrderedDict.fromkeys(fullList))
+    return JsonResponse(response, content_type='text/json', safe=False)
