@@ -3,6 +3,7 @@ from collections import OrderedDict
 from pathlib import Path
 import os
 import json
+import re
 from sklearn.decomposition import TruncatedSVD
 from sklearn.metrics import adjusted_rand_score
 from sklearn.cluster import KMeans
@@ -94,9 +95,7 @@ def recommendationByDis(request, keyWord):
             product_descriptions.shape
             product_descriptions = product_descriptions.dropna()
             product_descriptions.shape
-            product_descriptions.head()
             product_descriptions1 = product_descriptions.head(500)
-            product_descriptions1["product_description"].head(10)
             vectorizer = TfidfVectorizer(stop_words='english')
             X1 = vectorizer.fit_transform(
                 product_descriptions1["product_description"])
@@ -128,7 +127,7 @@ def recommendationByDis(request, keyWord):
                     print(' %s' % terms[ind])
                     diskeyword.append(terms[ind])
             print_cluster(prediction[0])
-            response = getProductKey(diskeyword)
+            response = getProductKey(diskeyword,keyWord)
             newdisc=list(OrderedDict.fromkeys(response))
             return JsonResponse(newdisc[:15], content_type='text/json', safe=False)
         except Exception as e:
@@ -136,14 +135,19 @@ def recommendationByDis(request, keyWord):
             return JsonResponse([], content_type='text/json', safe=False)
 
 
-def getProductKey(mylist):
+def getProductKey(mylist,keyWord):
     productid = []
+    print(keyWord)
     dictobj = pd.read_csv(os.path.join(BASE_DIR, "myapp",
                      "wnewproductdis.csv"),
                           header=None, index_col=0, squeeze=True).to_dict()
     for item in mylist:
         for key, obj in dictobj.items():
-            if item in obj:
+            obj=obj.lower()
+            keyWord=keyWord.lower()
+            if re.search(keyWord, obj):
+                print(keyWord)
+                print(obj)
                 productid.append(key)
     return productid
 
@@ -223,7 +227,7 @@ def all(request, year, latest_productId, keyWord):
             print(' %s' % terms[ind])
             diskeyword.append(terms[ind])
     print_cluster(prediction[0])
-    discresponse=getProductKey(diskeyword)
+    discresponse=getProductKey(diskeyword,keyWord)
     newindex=list(OrderedDict.fromkeys(indexresponse))
     newuser=list(OrderedDict.fromkeys(userresponse))
     newdisc=list(OrderedDict.fromkeys(discresponse))
