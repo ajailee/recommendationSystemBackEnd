@@ -148,6 +148,7 @@ def getProductKey(mylist,keyWord):
             if re.search(keyWord, obj):
                 print(keyWord)
                 print(obj)
+                print(item)
                 productid.append(key)
     return productid
 
