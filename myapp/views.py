@@ -227,7 +227,7 @@ def all(request, year, latest_productId, keyWord):
     newindex=list(OrderedDict.fromkeys(indexresponse))
     newuser=list(OrderedDict.fromkeys(userresponse))
     newdisc=list(OrderedDict.fromkeys(discresponse))
-    fullList=list(set(newindex+newuser+newdisc))
+    fullList=list(set(newuser+newdisc+newindex))
     response =list(OrderedDict.fromkeys(fullList))
     
     return JsonResponse(response, content_type='text/json', safe=False)
