@@ -255,13 +255,6 @@ def all(request, year, latest_productId, keyWord):
     terms = vectorizer.get_feature_names()
     Y = vectorizer.transform([keyWord])
     prediction = model.predict(Y)
-    true_k = 10
-    model = KMeans(n_clusters=true_k, init='k-means++',
-                   max_iter=100, n_init=1)
-    model.fit(X1)
-    print("Top terms per cluster:")
-    order_centroids = model.cluster_centers_.argsort()[:, ::-1]
-    terms = vectorizer.get_feature_names()
     diskeyword = [keyWord]
 
     def print_cluster(i):
